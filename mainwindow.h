@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <sys/time.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -13,24 +14,20 @@ class MainWindow : public QMainWindow
     int x;
     int y;
     int corEscolhida;
-    int r;
-    int g;
-    int b;
-    int largura;
-    int altura;
-    int acertos=0;
+    int r,g,b;
+    int largura, altura;
+    int acertos=0, erros=0;
+    float tempoReacao=0;
+    struct timeval tempo_inicial, tempo_final;
 
 public:
     MainWindow(QWidget *parent = nullptr);
-
     void paintEvent(QPaintEvent *event);
     void escolherCor();
     void escolherPosicao();
     ~MainWindow();
 public slots:
-    void finalizador();
-
-
+    void reniciar();
 private:
     Ui::MainWindow *ui;
     void keyPressEvent( QKeyEvent *k );

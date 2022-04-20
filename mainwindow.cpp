@@ -7,9 +7,7 @@
 #include <QPen>
 #include <QPainter>
 #include <QDebug>
-#include <time.h>
-
-
+#include <sys/time.h>
 
 int r;
 int g;
@@ -21,20 +19,16 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 
 {
-
     ui->setupUi(this);
     largura = width()-200;
     altura = height()-200;
 
     srand(time(0));
-    ui->teste->setText("funcionando ");
 
     escolherPosicao();
     escolherCor();
-//    connect(ui->teste,SIGNAL(clicked(bool)),this,SLOT(finalizador()));
-
-
-
+    gettimeofday(&tempo_inicial, NULL);
+    connect(ui->retry_btn,SIGNAL(clicked(bool)),this,SLOT(reniciar()));
 
 }
 
@@ -42,11 +36,22 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::reniciar()
+{
+    acertos = 0;
+    erros = 0;
+    tempoReacao = 0;
+    gettimeofday(&tempo_inicial, NULL);
+    escolherPosicao();
+    escolherCor();
+    ui->teste->setText(QString::number(tempoReacao));
+    repaint();
+}
 void MainWindow::escolherCor(){
      srand(time(0));
 
     corEscolhida = rand()%4;
-
 
     switch (corEscolhida) {
 
@@ -71,8 +76,6 @@ void MainWindow::escolherCor(){
         b=0;
         break;
 
-
-
     }
 }
 
@@ -81,11 +84,7 @@ void MainWindow::escolherPosicao()
     x = 100+rand()%(largura -50);
     y=rand()%(altura -50);
 }
-void MainWindow::finalizador()
-{
-    std::cout<<"seila qualquer coisa"<<std::endl;
-    exit(0);
-}
+
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
@@ -111,35 +110,45 @@ void MainWindow::paintEvent(QPaintEvent *event)
     painter.drawEllipse(x,y,larg,alt);
 
 
-
-
 }
 void MainWindow::keyPressEvent( QKeyEvent *k )
 {
     char tecla = char(k->key());
     std::cout<<tecla<<std::endl;
     int valorTecla;
-    if(tecla =='W')
-    {
-        valorTecla=0;
-    }else if(tecla=='S'){
-        valorTecla=1;
 
-    }else if(tecla=='A'){
-        valorTecla=2;
-    }else if(tecla=='D')
-    {
-        valorTecla=3;
-    }
-    if(valorTecla==corEscolhida)
-    {
-        std::cout<<"acertou"<<std::endl;
-        acertos+=1;
-        ui->teste->setText(QString::number(acertos));
-        escolherCor();
-        escolherPosicao();
-        repaint();
+    if(acertos<10){
+        if(tecla =='W')
+        {
+            valorTecla=0;
+        }else if(tecla=='S'){
+            valorTecla=1;
+        }else if(tecla=='A'){
+            valorTecla=2;
+        }else if(tecla=='D')
+        {
+            valorTecla=3;
+        }
+        if(valorTecla==corEscolhida)
+        {
+            gettimeofday(&tempo_final, NULL);
+            tempoReacao += (int) (1000 * (tempo_final.tv_sec - tempo_inicial.tv_sec) + (tempo_final.tv_usec - tempo_inicial.tv_usec) / 1000);
+            std::cout<<"acertou"<<std::endl;
+            ui->teste->setText(QString::number(tempoReacao));
+            acertos+=1;
+            escolherCor();
+            escolherPosicao();
+            repaint();
+            gettimeofday(&tempo_inicial, NULL);
+        }else{
+            std::cout<<"errou"<<std::endl;
+            erros+=1;
+        }
     }else{
-        std::cout<<"errou"<<std::endl;
+        float score;
+        float media_reacao = tempoReacao/10000;
+        score = (100000*(acertos-erros)/(int)tempoReacao);
+        std::cout<< "Acabou" << std::endl;
+        std::cout<< media_reacao << std::endl;
     }
 }
