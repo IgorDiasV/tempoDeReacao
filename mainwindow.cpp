@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "dialog.h"
 #include <stdlib.h>
 #include <iostream>
 #include <QKeyEvent>
@@ -8,11 +9,6 @@
 #include <QPainter>
 #include <QDebug>
 #include <sys/time.h>
-
-int r;
-int g;
-int b;
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -41,41 +37,44 @@ void MainWindow::reniciar()
 {
     acertos = 0;
     erros = 0;
+    tentativas =0;
     tempoReacao = 0;
+    score = 0;
     gettimeofday(&tempo_inicial, NULL);
     escolherPosicao();
     escolherCor();
     ui->teste->setText(QString::number(tempoReacao));
     repaint();
 }
-void MainWindow::escolherCor(){
-     srand(time(0));
+
+void MainWindow::escolherCor()
+{
+    srand(time(0));
 
     corEscolhida = rand()%4;
 
     switch (corEscolhida) {
 
     case 0:
-        r=0;
-        g=0;
+        r=61;
+        g=142;
         b=255;
         break;
    case 1:
         r=255;
-        g=0;
-        b=0;
+        g=56;
+        b=56;
         break;
    case 2:
-        r=0;
-        g=255;
-        b=0;
+        r=100;
+        g=230;
+        b=80;
         break;
    case 3:
-        r=255;
-        g=255;
-        b=0;
+        r=237;
+        g=202;
+        b=45;
         break;
-
     }
 }
 
@@ -109,31 +108,26 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     painter.drawEllipse(x,y,larg,alt);
 
-
 }
 void MainWindow::keyPressEvent( QKeyEvent *k )
 {
     char tecla = char(k->key());
-    std::cout<<tecla<<std::endl;
     int valorTecla;
 
     if(acertos<10){
-        if(tecla =='W')
-        {
+        if(tecla =='W'){
             valorTecla=0;
         }else if(tecla=='S'){
             valorTecla=1;
         }else if(tecla=='A'){
             valorTecla=2;
-        }else if(tecla=='D')
-        {
+        }else if(tecla=='D'){
             valorTecla=3;
         }
         if(valorTecla==corEscolhida)
         {
             gettimeofday(&tempo_final, NULL);
             tempoReacao += (int) (1000 * (tempo_final.tv_sec - tempo_inicial.tv_sec) + (tempo_final.tv_usec - tempo_inicial.tv_usec) / 1000);
-            std::cout<<"acertou"<<std::endl;
             ui->teste->setText(QString::number(tempoReacao));
             acertos+=1;
             escolherCor();
@@ -141,14 +135,15 @@ void MainWindow::keyPressEvent( QKeyEvent *k )
             repaint();
             gettimeofday(&tempo_inicial, NULL);
         }else{
-            std::cout<<"errou"<<std::endl;
             erros+=1;
         }
+        tentativas++;
     }else{
-        float score;
-        float media_reacao = tempoReacao/10000;
-        score = (100000*(acertos-erros)/(int)tempoReacao);
-        std::cout<< "Acabou" << std::endl;
-        std::cout<< media_reacao << std::endl;
+        float media_reacao = tempoReacao/acertos;
+        score = acertos-erros;
+
+        Dialog tela;
+        tela.carregarValores(score, media_reacao, tempoReacao);
+        tela.exec();
     }
 }

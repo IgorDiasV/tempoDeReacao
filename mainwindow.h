@@ -16,8 +16,9 @@ class MainWindow : public QMainWindow
     int corEscolhida;
     int r,g,b;
     int largura, altura;
-    int acertos=0, erros=0;
+    int acertos=0, erros=0, tentativas=0;
     float tempoReacao=0;
+    int score=0;
     struct timeval tempo_inicial, tempo_final;
 
 public:
